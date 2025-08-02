@@ -89,12 +89,21 @@ const getTickets = async (req, res) => {
 // @access  Private
 const getTicket = async (req, res) => {
   try {
+    console.log('Getting ticket with ID:', req.params.id);
+    
+    // Validate ticket ID format
+    if (!req.params.id || req.params.id.length !== 24) {
+      return res.status(400).json({ message: 'Invalid ticket ID format' });
+    }
+    
     const ticket = await Ticket.findById(req.params.id)
       .populate('createdBy', 'name email profileImage')
       .populate('assignedTo', 'name email profileImage')
       .populate('category', 'name color')
       .populate('upvotes', 'name')
       .populate('downvotes', 'name');
+    
+    console.log('Found ticket:', ticket ? 'Yes' : 'No');
     
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
@@ -114,6 +123,8 @@ const getTicket = async (req, res) => {
       .populate('author', 'name email profileImage role')
       .sort({ createdAt: 1 });
     
+    console.log('Found comments:', comments.length);
+    
     res.json({
       success: true,
       data: {
@@ -122,6 +133,7 @@ const getTicket = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error in getTicket:', error);
     res.status(400).json({ message: error.message });
   }
 };

@@ -9,8 +9,13 @@ export const ticketService = {
 
   // Get single ticket
   getTicket: async (id) => {
-    const response = await api.get(`/tickets/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/tickets/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching ticket:', error);
+      throw error;
+    }
   },
 
   // Create ticket

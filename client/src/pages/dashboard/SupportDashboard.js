@@ -447,12 +447,12 @@ const SupportDashboard = () => {
                               });
                             }}
                             disabled={updateTicketMutation.isLoading}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white enhanced-dropdown"
                           >
-                            <option value="open">Open</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                            <option value="closed">Closed</option>
+                            <option value="open" className="bg-yellow-100 text-yellow-800">🟡 Open</option>
+                            <option value="in_progress" className="bg-blue-100 text-blue-800">🔵 In Progress</option>
+                            <option value="resolved" className="bg-green-100 text-green-800">🟢 Resolved</option>
+                            <option value="closed" className="bg-gray-100 text-gray-800">⚫ Closed</option>
                           </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -465,7 +465,7 @@ const SupportDashboard = () => {
                               });
                             }}
                             disabled={updateTicketMutation.isLoading}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white enhanced-dropdown"
                           >
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -502,12 +502,14 @@ const SupportDashboard = () => {
                               });
                             }}
                             disabled={updateTicketMutation.isLoading}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white enhanced-dropdown"
                           >
                             <option value="">Unassigned</option>
-                            {usersData?.data?.filter(u => u.role === 'end_user').map((userItem) => (
+                            {usersData?.data?.filter(u => u.role === 'support_agent' || u.role === 'admin' || u.role === 'end_user').map((userItem) => (
                               <option key={userItem._id} value={userItem._id}>
                                 {userItem.name}
+                                {'\n'}
+                                {userItem.role === 'admin' ? 'Admin' : userItem.role === 'support_agent' ? 'Support Agent' : 'End User'}
                               </option>
                             ))}
                           </select>

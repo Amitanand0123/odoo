@@ -27,11 +27,23 @@ const TicketDetail = () => {
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
 
+  // Validate ticket ID format
+  const isValidTicketId = id && id.length === 24;
+
   const { data, isLoading, error } = useQuery(
     ['ticket', id],
     () => ticketService.getTicket(id),
     {
-      enabled: !!id
+      enabled: !!id && isValidTicketId,
+      onSuccess: (data) => {
+        console.log('Ticket data loaded:', data);
+      },
+      onError: (error) => {
+        console.error('Failed to load ticket:', error);
+        console.error('Error response:', error.response);
+        console.error('Error status:', error.response?.status);
+        console.error('Error data:', error.response?.data);
+      }
     }
   );
 
@@ -132,19 +144,12 @@ const TicketDetail = () => {
     return colors[priority] || colors.medium;
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
-
-  if (error) {
+  if (!isValidTicketId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load ticket</p>
+          <p className="text-red-600 mb-4">Invalid ticket ID format</p>
+          <p className="text-gray-500 mb-4">Ticket ID: {id}</p>
           <button 
             onClick={() => navigate('/dashboard')}
             className="btn btn-primary"
@@ -156,13 +161,44 @@ const TicketDetail = () => {
     );
   }
 
-  const { ticket, comments } = data || {};
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Ticket detail error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Failed to load ticket: {error.message}</p>
+          <p className="text-gray-500 mb-4">Error details: {JSON.stringify(error)}</p>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="btn btn-primary"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { ticket, comments } = data?.data || {};
+
+  console.log('TicketDetail data:', data);
+  console.log('Ticket:', ticket);
+  console.log('Comments:', comments);
 
   if (!ticket) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Ticket not found</p>
+          <p className="text-sm text-gray-500 mb-4">Data received: {JSON.stringify(data)}</p>
           <button 
             onClick={() => navigate('/dashboard')}
             className="btn btn-primary"
@@ -305,22 +341,22 @@ const TicketDetail = () => {
                 Update Ticket Status
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                 <select
-                   value={ticket.status}
-                   onChange={(e) => updateTicketMutation.mutate({ status: e.target.value })}
-                   disabled={updateTicketMutation.isLoading}
-                   className="input"
-                 >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </select>
+                                                   <select
+                    value={ticket.status}
+                    onChange={(e) => updateTicketMutation.mutate({ status: e.target.value })}
+                    disabled={updateTicketMutation.isLoading}
+                    className="input enhanced-dropdown"
+                  >
+                   <option value="open" className="bg-yellow-100 text-yellow-800">🟡 Open</option>
+                   <option value="in_progress" className="bg-blue-100 text-blue-800">🔵 In Progress</option>
+                   <option value="resolved" className="bg-green-100 text-green-800">🟢 Resolved</option>
+                   <option value="closed" className="bg-gray-100 text-gray-800">⚫ Closed</option>
+                 </select>
                                  <select
                    value={ticket.priority}
                    onChange={(e) => updateTicketMutation.mutate({ priority: e.target.value })}
                    disabled={updateTicketMutation.isLoading}
-                   className="input"
+                   className="input enhanced-dropdown"
                  >
                   <option value="low">Low Priority</option>
                   <option value="medium">Medium Priority</option>
@@ -331,7 +367,7 @@ const TicketDetail = () => {
                    value={ticket.assignedTo?._id || ''}
                    onChange={(e) => updateTicketMutation.mutate({ assignedTo: e.target.value || null })}
                    disabled={updateTicketMutation.isLoading || usersLoading}
-                   className="input"
+                   className="input enhanced-dropdown"
                  >
                   <option value="">Unassigned</option>
                   {usersLoading ? (
@@ -339,9 +375,11 @@ const TicketDetail = () => {
                   ) : usersError ? (
                     <option disabled>Error loading users</option>
                                      ) : (
-                     usersData?.data?.filter(u => u.role === 'end_user').map((userItem) => (
+                     usersData?.data?.filter(u => u.role === 'support_agent' || u.role === 'admin' || u.role === 'end_user').map((userItem) => (
                        <option key={userItem._id} value={userItem._id}>
-                         {userItem.name} (End User)
+                         {userItem.name}
+                         {'\n'}
+                         {userItem.role === 'admin' ? 'Admin' : userItem.role === 'support_agent' ? 'Support Agent' : 'End User'}
                        </option>
                      ))
                    )}
