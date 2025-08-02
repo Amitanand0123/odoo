@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
+import Landing from './pages/landing';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -60,6 +61,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={<Landing/>}></Route>
       <Route 
         path="/login" 
         element={
