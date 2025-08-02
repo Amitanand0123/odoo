@@ -9,16 +9,29 @@ const sendEmail = async (options) => {
       html: options.html
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email timeout')), 15000); // 15 second timeout
+    });
+
+    const emailPromise = transporter.sendMail(mailOptions);
+    
+    const info = await Promise.race([emailPromise, timeoutPromise]);
     console.log('Email sent:', info.messageId);
     return info;
   } catch (error) {
     console.error('Email sending failed:', error);
-    throw error;
+    // Don't throw error, just log it to prevent blocking the main operation
+    return null;
   }
 };
 
 const sendTicketNotification = async (ticket, type, recipient) => {
+  // Skip email notifications if disabled
+  if (process.env.DISABLE_EMAIL_NOTIFICATIONS === 'true') {
+    console.log('Email notifications disabled, skipping notification');
+    return null;
+  }
   const templates = {
     created: {
       subject: `New Ticket Created: ${ticket.subject}`,
@@ -76,11 +89,16 @@ const sendTicketNotification = async (ticket, type, recipient) => {
     throw new Error(`Unknown notification type: ${type}`);
   }
 
-  return await sendEmail({
-    to: recipient.email,
-    subject: template.subject,
-    html: template.html
-  });
+  try {
+    return await sendEmail({
+      to: recipient.email,
+      subject: template.subject,
+      html: template.html
+    });
+  } catch (error) {
+    console.error('Failed to send ticket notification:', error);
+    return null;
+  }
 };
 
 const sendUpgradeRequestNotification = async (user, admins) => {

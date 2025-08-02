@@ -322,12 +322,19 @@ const addComment = async (req, res) => {
     const populatedComment = await Comment.findById(comment._id)
       .populate('author', 'name email profileImage role');
     
-    // Send notification to ticket creator (if not internal)
+    // Send notification to ticket creator (if not internal) - asynchronously to avoid blocking
     if (!isInternal) {
-      const creator = await User.findById(ticket.createdBy);
-      if (creator && creator._id.toString() !== req.user.id) {
-        await sendTicketNotification(ticket, 'commented', creator);
-      }
+      setImmediate(async () => {
+        try {
+          const creator = await User.findById(ticket.createdBy);
+          if (creator && creator._id.toString() !== req.user.id) {
+            await sendTicketNotification(ticket, 'commented', creator);
+          }
+        } catch (emailError) {
+          console.error('Failed to send comment notification email:', emailError.message);
+          // Don't fail the comment creation if email fails
+        }
+      });
     }
     
     res.status(201).json({

@@ -154,4 +154,21 @@
   .enhanced-dropdown option[value="closed"] {
     @apply bg-gray-50 text-gray-800;
   }
+  
+  /* Role display styling */
+  .role-dropdown option {
+    @apply py-2 px-3;
+  }
+  
+  .role-dropdown option[data-role="admin"] {
+    @apply bg-red-50 text-red-800;
+  }
+  
+  .role-dropdown option[data-role="support_agent"] {
+    @apply bg-blue-50 text-blue-800;
+  }
+  
+  .role-dropdown option[data-role="end_user"] {
+    @apply bg-green-50 text-green-800;
+  }
 } 

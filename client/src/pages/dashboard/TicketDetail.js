@@ -367,7 +367,7 @@ const TicketDetail = () => {
                    value={ticket.assignedTo?._id || ''}
                    onChange={(e) => updateTicketMutation.mutate({ assignedTo: e.target.value || null })}
                    disabled={updateTicketMutation.isLoading || usersLoading}
-                   className="input enhanced-dropdown"
+                   className="input enhanced-dropdown role-dropdown"
                  >
                   <option value="">Unassigned</option>
                   {usersLoading ? (
@@ -376,10 +376,8 @@ const TicketDetail = () => {
                     <option disabled>Error loading users</option>
                                      ) : (
                      usersData?.data?.filter(u => u.role === 'support_agent' || u.role === 'admin' || u.role === 'end_user').map((userItem) => (
-                       <option key={userItem._id} value={userItem._id}>
-                         {userItem.name}
-                         {'\n'}
-                         {userItem.role === 'admin' ? 'Admin' : userItem.role === 'support_agent' ? 'Support Agent' : 'End User'}
+                       <option key={userItem._id} value={userItem._id} data-role={userItem.role}>
+                         {userItem.name} {userItem.role === 'support_agent' ? 'Support Agent' : userItem.role === 'admin' ? 'Admin' : 'End User'}
                        </option>
                      ))
                    )}

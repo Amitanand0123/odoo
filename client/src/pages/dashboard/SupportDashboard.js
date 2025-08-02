@@ -502,14 +502,12 @@ const SupportDashboard = () => {
                               });
                             }}
                             disabled={updateTicketMutation.isLoading}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white enhanced-dropdown"
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white enhanced-dropdown role-dropdown"
                           >
                             <option value="">Unassigned</option>
                             {usersData?.data?.filter(u => u.role === 'support_agent' || u.role === 'admin' || u.role === 'end_user').map((userItem) => (
-                              <option key={userItem._id} value={userItem._id}>
-                                {userItem.name}
-                                {'\n'}
-                                {userItem.role === 'admin' ? 'Admin' : userItem.role === 'support_agent' ? 'Support Agent' : 'End User'}
+                              <option key={userItem._id} value={userItem._id} data-role={userItem.role}>
+                                {userItem.name} {userItem.role === 'admin' ? 'Admin' : userItem.role === 'support_agent' ? 'Support Agent' : 'End User'}
                               </option>
                             ))}
                           </select>
