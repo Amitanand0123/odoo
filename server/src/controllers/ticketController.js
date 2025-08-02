@@ -3,6 +3,7 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const { sendTicketNotification } = require('../services/emailService');
 const { getCategoryByName } = require('../services/categoryService');
+const Comment = require('../models/Comment');
 
 // @desc    Get all tickets
 // @route   GET /api/tickets
@@ -110,7 +111,12 @@ const getTicket = async (req, res) => {
     }
     
     // Check access permissions
+    console.log('User role:', req.user.role);
+    console.log('User ID:', req.user.id);
+    console.log('Ticket created by:', ticket.createdBy._id.toString());
+    
     if (req.user.role === 'end_user' && ticket.createdBy._id.toString() !== req.user.id) {
+      console.log('Access denied: End user trying to access ticket not created by them');
       return res.status(403).json({ message: 'Not authorized to view this ticket' });
     }
     
@@ -121,6 +127,8 @@ const getTicket = async (req, res) => {
     // Get comments
     const comments = await Comment.find({ ticket: ticket._id })
       .populate('author', 'name email profileImage role')
+      .populate('upvotes', 'name')
+      .populate('downvotes', 'name')
       .sort({ createdAt: 1 });
     
     console.log('Found comments:', comments.length);
@@ -155,6 +163,8 @@ const createTicket = async (req, res) => {
       categoryId = categoryDoc._id;
     }
     
+    console.log('Creating ticket for user:', req.user.id, 'Role:', req.user.role);
+    
     const ticket = await Ticket.create({
       subject,
       description,
@@ -164,6 +174,8 @@ const createTicket = async (req, res) => {
       assignedTo: undefined, // Tickets are unassigned initially
       attachments: attachments || []
     });
+    
+    console.log('Ticket created with ID:', ticket._id, 'Created by:', ticket.createdBy);
     
     const populatedTicket = await Ticket.findById(ticket._id)
       .populate('createdBy', 'name email profileImage')
@@ -430,6 +442,49 @@ const assignTicket = async (req, res) => {
   }
 };
 
+// @desc    Vote on comment
+// @route   PUT /api/tickets/:ticketId/comments/:commentId/vote
+// @access  Private
+const voteComment = async (req, res) => {
+  try {
+    const { voteType } = req.body; // 'upvote' or 'downvote'
+    const { commentId } = req.params;
+    
+    const comment = await Comment.findById(commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    const userId = req.user.id;
+    
+    // Remove existing votes
+    comment.upvotes = comment.upvotes.filter(id => id.toString() !== userId);
+    comment.downvotes = comment.downvotes.filter(id => id.toString() !== userId);
+    
+    // Add new vote
+    if (voteType === 'upvote') {
+      comment.upvotes.push(userId);
+    } else if (voteType === 'downvote') {
+      comment.downvotes.push(userId);
+    }
+    
+    await comment.save();
+    
+    const updatedComment = await Comment.findById(comment._id)
+      .populate('author', 'name email profileImage role')
+      .populate('upvotes', 'name')
+      .populate('downvotes', 'name');
+    
+    res.json({
+      success: true,
+      data: updatedComment
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getTickets,
   getTicket,
@@ -438,5 +493,6 @@ module.exports = {
   deleteTicket,
   addComment,
   voteTicket,
-  assignTicket
+  assignTicket,
+  voteComment
 }; 

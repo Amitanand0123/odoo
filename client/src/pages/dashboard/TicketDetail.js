@@ -110,6 +110,19 @@ const TicketDetail = () => {
     }
   );
 
+  const voteCommentMutation = useMutation(
+    ({ commentId, voteType }) => ticketService.voteComment(id, commentId, voteType),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['ticket', id]);
+        toast.success('Comment vote recorded successfully');
+      },
+      onError: (error) => {
+        toast.error('Failed to record comment vote');
+      }
+    }
+  );
+
   const handleAddComment = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -122,6 +135,10 @@ const TicketDetail = () => {
 
   const handleVote = (voteType) => {
     voteMutation.mutate(voteType);
+  };
+
+  const handleCommentVote = (commentId, voteType) => {
+    voteCommentMutation.mutate({ commentId, voteType });
   };
 
   const getStatusColor = (status) => {
@@ -450,33 +467,66 @@ const TicketDetail = () => {
                 <p>No comments yet. Be the first to comment!</p>
               </div>
             ) : (
-              comments?.map((comment) => (
-                <div key={comment._id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
-                      {comment.author?.name?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {comment.author?.name}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
-                        {comment.isInternal && (
-                          <span className="badge bg-yellow-100 text-yellow-800">
-                            Internal
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-700 whitespace-pre-wrap">
-                        {comment.content}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
+                             comments?.map((comment) => (
+                 <div key={comment._id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                   <div className="flex items-start space-x-3">
+                     <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
+                       {comment.author?.name?.charAt(0)?.toUpperCase() || 'U'}
+                     </div>
+                     <div className="flex-1">
+                       <div className="flex items-center space-x-2 mb-1">
+                         <span className="font-medium text-gray-900">
+                           {comment.author?.name}
+                         </span>
+                         <span className="text-sm text-gray-500">
+                           {new Date(comment.createdAt).toLocaleDateString()}
+                         </span>
+                         {comment.isInternal && (
+                           <span className="badge bg-yellow-100 text-yellow-800">
+                             Internal
+                           </span>
+                         )}
+                       </div>
+                       <p className="text-gray-700 whitespace-pre-wrap">
+                         {comment.content}
+                       </p>
+                       
+                       {/* Comment Voting */}
+                       <div className="flex items-center space-x-4 mt-3">
+                         <div className="flex items-center space-x-1">
+                           <button
+                             onClick={() => handleCommentVote(comment._id, 'upvote')}
+                             disabled={voteCommentMutation.isLoading}
+                             className={`p-1 rounded hover:bg-gray-100 ${
+                               comment.upvotes?.some(vote => vote._id === user?._id) ? 'text-green-600' : 'text-gray-400'
+                             }`}
+                           >
+                             <ChevronUp className="w-4 h-4" />
+                           </button>
+                           <span className="text-sm font-medium text-gray-900">
+                             {comment.voteCount || 0}
+                           </span>
+                           <button
+                             onClick={() => handleCommentVote(comment._id, 'downvote')}
+                             disabled={voteCommentMutation.isLoading}
+                             className={`p-1 rounded hover:bg-gray-100 ${
+                               comment.downvotes?.some(vote => vote._id === user?._id) ? 'text-red-600' : 'text-gray-400'
+                             }`}
+                           >
+                             <ChevronDown className="w-4 h-4" />
+                           </button>
+                         </div>
+                         {voteCommentMutation.isLoading && (
+                           <div className="flex items-center text-sm text-gray-500">
+                             <LoadingSpinner size="sm" />
+                             <span className="ml-1">Voting...</span>
+                           </div>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               ))
             )}
           </div>
         </div>

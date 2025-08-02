@@ -56,6 +56,14 @@ const UserDashboard = () => {
     }),
     {
       keepPreviousData: true,
+      onSuccess: (data) => {
+        console.log('UserDashboard tickets loaded:', data);
+        console.log('User ID:', user?.id);
+        console.log('User role:', user?.role);
+      },
+      onError: (error) => {
+        console.error('UserDashboard tickets error:', error);
+      }
     }
   );
 
@@ -401,7 +409,12 @@ const UserDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
-                            onClick={() => navigate(`/ticket/${ticket._id}`)}
+                            onClick={() => {
+                              console.log('Navigating to ticket:', ticket._id);
+                              console.log('Ticket created by:', ticket.createdBy?._id);
+                              console.log('Current user:', user?.id);
+                              navigate(`/tickets/${ticket._id}`);
+                            }}
                             className="text-primary-600 hover:text-primary-900"
                           >
                             View

@@ -48,6 +48,12 @@ export const ticketService = {
     return response.data;
   },
 
+  // Vote on comment
+  voteComment: async (ticketId, commentId, voteType) => {
+    const response = await api.put(`/tickets/${ticketId}/comments/${commentId}/vote`, { voteType });
+    return response.data;
+  },
+
   // Assign ticket
   assignTicket: async (ticketId, assignedTo) => {
     const response = await api.put(`/tickets/${ticketId}/assign`, { assignedTo });

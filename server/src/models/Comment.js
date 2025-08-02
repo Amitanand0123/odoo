@@ -29,10 +29,27 @@ const commentSchema = new mongoose.Schema({
   },
   editedAt: {
     type: Date
-  }
+  },
+  upvotes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  downvotes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
   timestamps: true
 });
+
+// Virtual for vote count
+commentSchema.virtual('voteCount').get(function() {
+  return this.upvotes.length - this.downvotes.length;
+});
+
+// Ensure virtuals are serialized
+commentSchema.set('toJSON', { virtuals: true });
+commentSchema.set('toObject', { virtuals: true });
 
 // Index for better query performance
 commentSchema.index({ ticket: 1, createdAt: -1 });

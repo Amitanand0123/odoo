@@ -9,7 +9,8 @@ const {
   deleteTicket,
   addComment,
   voteTicket,
-  assignTicket
+  assignTicket,
+  voteComment
 } = require('../controllers/ticketController');
 
 const router = express.Router();
@@ -92,5 +93,8 @@ router.route('/:id/vote')
 
 router.route('/:id/assign')
   .put(authorize('support_agent', 'admin'), assignTicket);
+
+router.route('/:ticketId/comments/:commentId/vote')
+  .put(voteValidation, voteComment);
 
 module.exports = router; 
