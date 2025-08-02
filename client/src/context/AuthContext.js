@@ -152,6 +152,10 @@ export const AuthProvider = ({ children }) => {
   const requestUpgrade = async () => {
     try {
       const response = await authService.requestUpgrade();
+      // Update user state with the upgrade request status
+      if (response.data) {
+        dispatch({ type: 'UPDATE_USER', payload: response.data });
+      }
       return response;
     } catch (error) {
       throw error;

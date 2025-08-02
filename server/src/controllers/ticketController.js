@@ -16,8 +16,15 @@ const getTickets = async (req, res) => {
     // Build query based on user role
     if (req.user.role === 'end_user') {
       query.createdBy = req.user.id;
-    } else if (req.user.role === 'support_agent' && assignedTo === 'me') {
-      query.assignedTo = req.user.id;
+    } else if (req.user.role === 'support_agent') {
+      if (assignedTo === 'me') {
+        // Show tickets assigned to this support agent
+        query.assignedTo = req.user.id;
+      } else if (assignedTo) {
+        // Show tickets assigned to specific user
+        query.assignedTo = assignedTo;
+      }
+      // If no assignedTo filter, show all tickets (for support agents)
     }
     
     if (status) query.status = status;
@@ -142,22 +149,34 @@ const createTicket = async (req, res) => {
       category: categoryId,
       priority,
       createdBy: req.user.id,
+      assignedTo: undefined, // Tickets are unassigned initially
       attachments: attachments || []
     });
     
     const populatedTicket = await Ticket.findById(ticket._id)
       .populate('createdBy', 'name email profileImage')
+      .populate('assignedTo', 'name email profileImage')
       .populate('category', 'name color');
     
-    // Send notification to support agents and admins
-    const supportUsers = await User.find({ 
-      role: { $in: ['support_agent', 'admin'] }, 
-      isActive: true 
+    // Send email notifications asynchronously to avoid blocking the response
+    setImmediate(async () => {
+      try {
+        const supportUsers = await User.find({ 
+          role: { $in: ['support_agent', 'admin'] }, 
+          isActive: true 
+        });
+        
+        for (const user of supportUsers) {
+          try {
+            await sendTicketNotification(populatedTicket, 'created', user);
+          } catch (emailError) {
+            console.error('Failed to send email notification:', emailError.message);
+          }
+        }
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError.message);
+      }
     });
-    
-    for (const user of supportUsers) {
-      await sendTicketNotification(populatedTicket, 'created', user);
-    }
     
     res.status(201).json({
       success: true,
@@ -181,19 +200,21 @@ const updateTicket = async (req, res) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
     
-    // Check permissions
+    // Check permissions - end users can only update their own tickets
     if (req.user.role === 'end_user' && ticket.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this ticket' });
     }
     
+    // Support agents and admins can update any ticket
+    
     const oldStatus = ticket.status;
     
-    ticket.subject = subject || ticket.subject;
-    ticket.description = description || ticket.description;
-    ticket.category = category || ticket.category;
-    ticket.priority = priority || ticket.priority;
-    ticket.status = status || ticket.status;
-    ticket.assignedTo = assignedTo || ticket.assignedTo;
+    if (subject !== undefined) ticket.subject = subject;
+    if (description !== undefined) ticket.description = description;
+    if (category !== undefined) ticket.category = category;
+    if (priority !== undefined) ticket.priority = priority;
+    if (status !== undefined) ticket.status = status;
+    if (assignedTo !== undefined) ticket.assignedTo = assignedTo;
     
     // Set resolved/closed dates
     if (status === 'resolved' && oldStatus !== 'resolved') {
@@ -211,9 +232,14 @@ const updateTicket = async (req, res) => {
       .populate('category', 'name color');
     
     // Send notification to ticket creator
-    const creator = await User.findById(ticket.createdBy);
-    if (creator) {
-      await sendTicketNotification(populatedTicket, 'updated', creator);
+    try {
+      const creator = await User.findById(ticket.createdBy);
+      if (creator) {
+        await sendTicketNotification(populatedTicket, 'updated', creator);
+      }
+    } catch (emailError) {
+      console.error('Failed to send update notification:', emailError.message);
+      // Don't fail the update if email fails
     }
     
     res.json({
@@ -361,8 +387,7 @@ const assignTicket = async (req, res) => {
       return res.status(400).json({ message: 'Can only assign to support agents or admins' });
     }
     
-    ticket.assignedTo = assignedTo;
-    ticket.status = 'in_progress';
+    ticket.assignedTo = assignedTo || null;
     
     const updatedTicket = await ticket.save();
     

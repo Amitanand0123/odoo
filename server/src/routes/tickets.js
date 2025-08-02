@@ -25,12 +25,37 @@ const ticketValidation = [
     .isLength({ min: 10, max: 1000 })
     .withMessage('Description must be between 10 and 1000 characters'),
   body('category')
-    .isMongoId()
-    .withMessage('Please provide a valid category ID'),
+    .notEmpty()
+    .withMessage('Category is required'),
   body('priority')
     .optional()
     .isIn(['low', 'medium', 'high', 'urgent'])
     .withMessage('Priority must be low, medium, high, or urgent')
+];
+
+const updateTicketValidation = [
+  body('subject')
+    .optional()
+    .trim()
+    .isLength({ min: 5, max: 100 })
+    .withMessage('Subject must be between 5 and 100 characters'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 1000 })
+    .withMessage('Description must be between 10 and 1000 characters'),
+  body('category')
+    .optional()
+    .notEmpty()
+    .withMessage('Category cannot be empty'),
+  body('priority')
+    .optional()
+    .isIn(['low', 'medium', 'high', 'urgent'])
+    .withMessage('Priority must be low, medium, high, or urgent'),
+  body('status')
+    .optional()
+    .isIn(['open', 'in_progress', 'resolved', 'closed'])
+    .withMessage('Status must be open, in_progress, resolved, or closed')
 ];
 
 const commentValidation = [
@@ -56,7 +81,7 @@ router.route('/')
 
 router.route('/:id')
   .get(getTicket)
-  .put(ticketValidation, updateTicket)
+  .put(updateTicketValidation, updateTicket)
   .delete(deleteTicket);
 
 router.route('/:id/comments')

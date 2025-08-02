@@ -65,7 +65,7 @@ const CreateTicket = () => {
         formData.append('files', file);
       });
       
-      const response = await ticketService.uploadFiles(files);
+      const response = await ticketService.uploadFiles(formData);
       setAttachments(prev => [...prev, ...response.urls]);
       toast.success('Files uploaded successfully');
     } catch (error) {
@@ -104,7 +104,9 @@ const CreateTicket = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Dashboard
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">Ask Your Question</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {user?.role === 'end_user' ? 'Ask Your Question' : 'Create Ticket'}
+              </h1>
             </div>
 
             {/* Right side */}
@@ -124,16 +126,16 @@ const CreateTicket = () => {
         {/* Main Form Container */}
         <div className="bg-green-50 rounded-lg border border-green-200 p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Question Field */}
+            {/* Subject Field */}
             <div>
               <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                Question
+                {user?.role === 'end_user' ? 'Question' : 'Subject'}
               </label>
               <input
                 id="subject"
                 type="text"
                 {...register('subject', {
-                  required: 'Question is required',
+                  required: user?.role === 'end_user' ? 'Question is required' : 'Subject is required',
                   minLength: {
                     value: 5,
                     message: 'Question must be at least 5 characters'
@@ -144,7 +146,7 @@ const CreateTicket = () => {
                   }
                 })}
                 className="input w-full"
-                placeholder="Enter your question"
+                placeholder={user?.role === 'end_user' ? "Enter your question" : "Enter ticket subject"}
               />
               {errors.subject && (
                 <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
@@ -305,7 +307,7 @@ const CreateTicket = () => {
                     <span className="ml-2">Creating Ticket...</span>
                   </div>
                 ) : (
-                  'Post Question'
+                  user?.role === 'end_user' ? 'Post Question' : 'Create Ticket'
                 )}
               </button>
             </div>

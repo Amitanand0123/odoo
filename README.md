@@ -1,95 +1,36 @@
 # QuickDesk - Help Desk System
 
-A comprehensive help desk solution built with the MERN stack (MongoDB, Express.js, React.js, Node.js) featuring role-based access control, ticket management, and real-time notifications.
+A comprehensive help desk solution built with the MERN stack (MongoDB, Express.js, React.js, Node.js) for efficient ticket management and support workflows.
 
 ## Features
 
-### 🔐 Authentication & Authorization
-- User registration and login
-- JWT-based authentication
-- Role-based access control (End User, Support Agent, Admin)
-- Profile management with role upgrade requests
+### Role-Based Access Control
+- **End Users**: Create tickets, view their own tickets, add comments, vote on tickets
+- **Support Agents**: View assigned tickets, update ticket status, assign tickets, create their own tickets
+- **Admins**: Full system access, user management, category management
 
-### 🎫 Ticket Management
+### Ticket Management
 - Create, view, update, and delete tickets
-- File attachments support
-- Ticket status tracking (Open → In Progress → Resolved → Closed)
-- Priority levels (Low, Medium, High, Urgent)
+- Status workflow: Open → In Progress → Resolved → Closed
+- Priority levels: Low, Medium, High, Urgent
 - Category-based organization
+- File attachments support
+- Voting system (upvote/downvote)
+- Comment system with role-based permissions
 
-### 🔍 Search & Filtering
-- Advanced search functionality
-- Filter by status, category, and priority
-- Sort by creation date, updates, votes, and views
-- Pagination support
+### Dashboard Features
+- **End User Dashboard**: Filters, search, pagination, sorting for personal tickets
+- **Support Agent Dashboard**: Multiple ticket queues (My Tickets, All Tickets) with statistics
+- **Admin Dashboard**: User management, category management, system overview
 
-### 💬 Communication
-- Comment system with threaded conversations
-- Internal notes for support agents
-- Email notifications for ticket updates
-- Public shareable links
+## Quick Start
 
-### 👍 Voting System
-- Upvote and downvote tickets
-- Vote tracking and display
-
-### 📊 Role-Based Dashboards
-
-#### **End User Dashboard**
-- View personal tickets with filtering, search, and pagination
-- Create new tickets with category selection
-- Track ticket status and progress
-- Vote on tickets and add comments
-
-#### **Support Agent Dashboard**
-- **My Tickets Queue**: View assigned tickets
-- **All Tickets Queue**: Browse all tickets in the system
-- Advanced filtering by status, category, and priority
-- Real-time ticket statistics and metrics
-
-#### **Admin Dashboard**
-- **User Management**: View all users and manage roles
-  - Change user roles (end_user ↔ support_agent ↔ admin)
-  - Activate/deactivate user accounts
-  - View user statistics
-- **Category Management**: Full CRUD operations for ticket categories
-  - Create new categories with custom colors
-  - Edit existing categories
-  - Delete categories (with safety checks)
-- **System Overview**: Comprehensive statistics and metrics
-
-## Tech Stack
-
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - Database
-- **Mongoose** - ODM for MongoDB
-- **JWT** - Authentication
-- **bcryptjs** - Password hashing
-- **Multer** - File upload handling
-- **Cloudinary** - Cloud file storage
-- **Nodemailer** - Email service
-
-### Frontend
-- **React.js** - UI library
-- **React Router** - Client-side routing
-- **React Query** - Data fetching and caching
-- **React Hook Form** - Form handling
-- **TailwindCSS** - Styling
-- **Lucide React** - Icons
-- **React Hot Toast** - Notifications
-
-## Prerequisites
-
-Before running this application, make sure you have the following installed:
-
+### Prerequisites
 - Node.js (v14 or higher)
+- MongoDB (local or cloud)
 - npm or yarn
-- MongoDB (local or MongoDB Atlas)
-- Git
 
-## Installation
+### Installation
 
 1. **Clone the repository**
    ```bash
@@ -99,9 +40,6 @@ Before running this application, make sure you have the following installed:
 
 2. **Install dependencies**
    ```bash
-   # Install root dependencies
-   npm install
-   
    # Install server dependencies
    cd server
    npm install
@@ -112,94 +50,46 @@ Before running this application, make sure you have the following installed:
    ```
 
 3. **Environment Setup**
-
-   Create a `.env` file in the `server` directory:
-   ```env
-   NODE_ENV=development
-   PORT=5000
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/quickdesk
-   JWT_SECRET=your_super_secret_jwt_key_here
-   JWT_EXPIRE=7d
-
-   # Cloudinary Configuration
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-
-   # Email Configuration (Gmail SMTP)
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_app_password
-   EMAIL_FROM=QuickDesk <noreply@quickdesk.com>
-
-   # Frontend URL (for CORS)
-   CLIENT_URL=http://localhost:3000
+   ```bash
+   # Copy environment example
+   cd ../server
+   cp env.example .env
+   
+   # Edit .env with your configuration
+   # Required: MONGODB_URI, JWT_SECRET
+   # Optional: EMAIL_*, CLOUDINARY_* for full functionality
    ```
 
 4. **Database Setup**
-   - Create a MongoDB database (local or Atlas)
-   - Update the `MONGODB_URI` in your `.env` file
-
-5. **Cloudinary Setup**
-   - Create a Cloudinary account
-   - Get your cloud name, API key, and secret
-   - Update the Cloudinary configuration in your `.env` file
-
-6. **Email Setup**
-   - Configure Gmail SMTP or another email service
-   - Update the email configuration in your `.env` file
-
-## Running the Application
-
-### Development Mode
-
-1. **Start the server**
    ```bash
-   cd server
-   npm run dev
+   # Start MongoDB (if using local)
+   mongod
+   
+   # Or use MongoDB Atlas (cloud)
+   # Update MONGODB_URI in .env
    ```
 
-2. **Start the client**
-   ```bash
-   cd client
-   npm start
-   ```
-
-3. **Create test users (optional)**
+5. **Create Test Users**
    ```bash
    # Create admin user
-   cd server
    npm run create-admin
    
    # Create support agent
    npm run create-support
    ```
 
-4. **Or run both simultaneously**
+6. **Start the application**
    ```bash
-   # From the root directory
+   # Start server (from server directory)
    npm run dev
-   ```
-
-### Test Accounts
-- **Admin**: admin@quickdesk.com / admin123
-- **Support Agent**: support@quickdesk.com / support123
-- **Regular User**: Register a new account through the UI
-
-### Production Mode
-
-1. **Build the client**
-   ```bash
-   cd client
-   npm run build
-   ```
-
-2. **Start the server**
-   ```bash
-   cd server
+   
+   # Start client (from client directory)
    npm start
    ```
+
+7. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
 
 ## API Endpoints
 
@@ -212,86 +102,120 @@ Before running this application, make sure you have the following installed:
 
 ### Tickets
 - `GET /api/tickets` - Get tickets (with filters)
+- `GET /api/tickets/:id` - Get single ticket
 - `POST /api/tickets` - Create ticket
-- `GET /api/tickets/:id` - Get ticket details
 - `PUT /api/tickets/:id` - Update ticket
 - `DELETE /api/tickets/:id` - Delete ticket
 - `POST /api/tickets/:id/comments` - Add comment
-- `PUT /api/tickets/:id/vote` - Upvote/downvote
+- `PUT /api/tickets/:id/vote` - Vote on ticket
 - `PUT /api/tickets/:id/assign` - Assign ticket
 
-## User Roles
+### Users (Admin Only)
+- `GET /api/users` - Get all users
+- `GET /api/users/:id` - Get user by ID
+- `PUT /api/users/:id/role` - Update user role
+- `PUT /api/users/:id/status` - Update user status
 
-### End User
-- Create and manage their own tickets
-- View ticket status and updates
-- Vote on tickets
-- Request role upgrades
-- Update profile information
+### Categories (Admin Only)
+- `GET /api/categories` - Get all categories
+- `POST /api/categories` - Create category
+- `PUT /api/categories/:id` - Update category
+- `DELETE /api/categories/:id` - Delete category
 
-### Support Agent
-- View and respond to all tickets
-- Assign tickets to themselves
-- Update ticket status
-- Add internal notes
-- Create tickets like end users
+## Troubleshooting
 
-### Admin
-- All Support Agent permissions
-- User management
-- Category management
-- System monitoring and reports
-- Approve/reject upgrade requests
+### Common Issues
 
-## Project Structure
+1. **Email Timeout Error**
+   - **Issue**: `connect ETIMEDOUT 64.233.170.108:587`
+   - **Solution**: This is an email configuration issue. The system will continue to work without email notifications. To fix:
+     - Configure proper SMTP settings in `.env`
+     - For Gmail, use App Password instead of regular password
+     - Or disable email notifications by commenting out email service calls
 
+2. **Tickets Not Showing in "My Tickets"**
+   - **Issue**: Support agent tickets not appearing in assigned queue
+   - **Solution**: Tickets created by support agents are now auto-assigned to themselves. Check that:
+     - The ticket was created successfully
+     - The support agent is viewing the "My Tickets" tab
+     - The ticket has the correct `assignedTo` field
+
+3. **Missing Status/Assignment Dropdowns**
+   - **Issue**: Support agents can't see status update controls
+   - **Solution**: Ensure you're logged in as a support agent or admin. The dropdowns only appear for these roles.
+
+4. **Category Validation Error**
+   - **Issue**: "Invalid category" when creating tickets
+   - **Solution**: Categories are now handled by name instead of ObjectId. Ensure:
+     - Categories exist in the database
+     - Category names are sent as strings, not ObjectIds
+
+### Environment Variables
+
+Required:
+```env
+MONGODB_URI=mongodb://localhost:27017/quickdesk
+JWT_SECRET=your_secret_key_here
+```
+
+Optional (for full functionality):
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+EMAIL_FROM=your_email@gmail.com
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+## Development
+
+### Project Structure
 ```
 quickdesk/
-├── client/                          # React Frontend
-│   ├── public/
+├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/              # Reusable UI components
-│   │   ├── pages/                   # Page components
-│   │   ├── services/                # API service layer
-│   │   ├── context/                 # React Context
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/         # Page components
+│   │   ├── services/      # API services
+│   │   ├── context/       # React context
 │   │   └── ...
-│   └── package.json
-├── server/                          # Node.js Backend
+│   └── ...
+├── server/                 # Node.js backend
 │   ├── src/
-│   │   ├── controllers/             # Route controllers
-│   │   ├── middleware/              # Express middleware
-│   │   ├── models/                  # MongoDB models
-│   │   ├── routes/                  # API routes
-│   │   ├── services/                # Business logic
+│   │   ├── controllers/   # Route controllers
+│   │   ├── models/        # Mongoose models
+│   │   ├── routes/        # API routes
+│   │   ├── middleware/    # Custom middleware
+│   │   ├── services/      # Business logic
 │   │   └── ...
-│   └── package.json
-└── README.md
+│   └── ...
+└── ...
 ```
+
+### Available Scripts
+
+**Server:**
+- `npm run dev` - Start development server
+- `npm run create-admin` - Create admin user
+- `npm run create-support` - Create support agent
+
+**Client:**
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you encounter any issues or have questions, please:
-
-1. Check the [Issues](https://github.com/your-repo/quickdesk/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
-## Acknowledgments
-
-- [React](https://reactjs.org/) - UI library
-- [Express.js](https://expressjs.com/) - Web framework
-- [MongoDB](https://www.mongodb.com/) - Database
-- [TailwindCSS](https://tailwindcss.com/) - CSS framework
-- [Lucide](https://lucide.dev/) - Icons 
+This project is licensed under the MIT License. 

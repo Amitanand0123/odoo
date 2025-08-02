@@ -33,6 +33,31 @@ const upload = multer({
   }
 });
 
+// Upload files handler
+const uploadFiles = async (req, res, next) => {
+  try {
+    upload.array('files', 5)(req, res, async (err) => {
+      if (err) {
+        return handleUploadError(err, req, res, next);
+      }
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: 'No files uploaded' });
+      }
+
+      const urls = req.files.map(file => file.path);
+      
+      res.json({
+        success: true,
+        urls: urls,
+        message: 'Files uploaded successfully'
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Upload failed', error: error.message });
+  }
+};
+
 // Handle upload errors
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -51,4 +76,4 @@ const handleUploadError = (error, req, res, next) => {
   next(error);
 };
 
-module.exports = { upload, handleUploadError }; 
+module.exports = { upload, handleUploadError, uploadFiles }; 

@@ -159,7 +159,8 @@ const requestUpgrade = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Upgrade request submitted successfully'
+      message: 'Upgrade request submitted successfully',
+      data: user
     });
   } catch (error) {
     res.status(400).json({ message: error.message });

@@ -27,14 +27,6 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
 // CORS
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
@@ -58,6 +50,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
+
+// Upload route
+app.post('/api/upload', require('./middleware/upload').uploadFiles);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -11,11 +11,13 @@ import {
   ChevronDown,
   User,
   Calendar,
-  Eye
+  Eye,
+  Settings
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { ticketService } from '../../services/ticketService';
+import { userService } from '../../services/userService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const TicketDetail = () => {
@@ -33,6 +35,16 @@ const TicketDetail = () => {
     }
   );
 
+  // Fetch end users for assignment (only for admins and support agents)
+  const { data: usersData, isLoading: usersLoading, error: usersError } = useQuery(
+    'users',
+    () => userService.getUsers(),
+    {
+      enabled: (user?.role === 'admin' || user?.role === 'support_agent') && !!id,
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
   const addCommentMutation = useMutation(
     (commentData) => ticketService.addComment(id, commentData),
     {
@@ -43,6 +55,32 @@ const TicketDetail = () => {
       },
       onError: (error) => {
         toast.error(error.response?.data?.message || 'Failed to add comment');
+      }
+    }
+  );
+
+  const updateTicketMutation = useMutation(
+    (updateData) => ticketService.updateTicket(id, updateData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['ticket', id]);
+        toast.success('Ticket updated successfully');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update ticket');
+      }
+    }
+  );
+
+  const assignTicketMutation = useMutation(
+    (assignedTo) => ticketService.assignTicket(id, assignedTo),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['ticket', id]);
+        toast.success('Ticket assigned successfully');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to assign ticket');
       }
     }
   );
@@ -118,7 +156,7 @@ const TicketDetail = () => {
     );
   }
 
-  const { ticket, comments } = data?.data || {};
+  const { ticket, comments } = data || {};
 
   if (!ticket) {
     return (
@@ -219,6 +257,12 @@ const TicketDetail = () => {
                   <Eye className="w-4 h-4 mr-1" />
                   {ticket.viewCount} views
                 </span>
+                {ticket.assignedTo && (
+                  <span className="flex items-center">
+                    <User className="w-4 h-4 mr-1" />
+                    Assigned to: {ticket.assignedTo.name}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -252,6 +296,65 @@ const TicketDetail = () => {
               {ticket.description}
             </p>
           </div>
+
+          {/* Status Update Section for Support Agents and Admins */}
+          {(user?.role === 'support_agent' || user?.role === 'admin') && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                <Settings className="w-4 h-4 mr-2" />
+                Update Ticket Status
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                 <select
+                   value={ticket.status}
+                   onChange={(e) => updateTicketMutation.mutate({ status: e.target.value })}
+                   disabled={updateTicketMutation.isLoading}
+                   className="input"
+                 >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+                                 <select
+                   value={ticket.priority}
+                   onChange={(e) => updateTicketMutation.mutate({ priority: e.target.value })}
+                   disabled={updateTicketMutation.isLoading}
+                   className="input"
+                 >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+                                 <select
+                   value={ticket.assignedTo?._id || ''}
+                   onChange={(e) => updateTicketMutation.mutate({ assignedTo: e.target.value || null })}
+                   disabled={updateTicketMutation.isLoading || usersLoading}
+                   className="input"
+                 >
+                  <option value="">Unassigned</option>
+                  {usersLoading ? (
+                    <option disabled>Loading users...</option>
+                  ) : usersError ? (
+                    <option disabled>Error loading users</option>
+                                     ) : (
+                     usersData?.data?.filter(u => u.role === 'end_user').map((userItem) => (
+                       <option key={userItem._id} value={userItem._id}>
+                         {userItem.name} (End User)
+                       </option>
+                     ))
+                   )}
+                </select>
+              </div>
+              {updateTicketMutation.isLoading && (
+                <div className="flex items-center text-sm text-gray-500 mt-3">
+                  <LoadingSpinner size="sm" />
+                  <span className="ml-2">Updating...</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Attachments */}
           {ticket.attachments && ticket.attachments.length > 0 && (

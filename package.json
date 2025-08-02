@@ -11,10 +11,19 @@
     "build": "cd client && npm run build",
     "start": "cd server && npm start"
   },
-  "keywords": ["helpdesk", "mern", "react", "node", "mongodb"],
+  "keywords": [
+    "helpdesk",
+    "mern",
+    "react",
+    "node",
+    "mongodb"
+  ],
   "author": "QuickDesk Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "multer-storage-cloudinary": "^4.0.0"
   }
-} 
+}

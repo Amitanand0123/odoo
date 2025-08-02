@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { toast } from 'react-hot-toast';
 import { 
   Search, 
@@ -20,6 +20,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { ticketService } from '../../services/ticketService';
 import { categoryService } from '../../services/categoryService';
+import { userService } from '../../services/userService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const SupportDashboard = () => {
@@ -34,6 +35,7 @@ const SupportDashboard = () => {
     search: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const queryClient = useQueryClient();
 
   // Fetch categories
   const { data: categoriesData } = useQuery(
@@ -41,6 +43,29 @@ const SupportDashboard = () => {
     () => categoryService.getCategories(),
     {
       staleTime: 5 * 60 * 1000,
+    }
+  );
+
+  // Fetch users for assignment
+  const { data: usersData } = useQuery(
+    'users',
+    () => userService.getUsers(),
+    {
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
+  // Update ticket mutation
+  const updateTicketMutation = useMutation(
+    (updateData) => ticketService.updateTicket(updateData.ticketId, updateData.data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['tickets']);
+        toast.success('Ticket updated successfully');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to update ticket');
+      }
     }
   );
 
@@ -142,6 +167,9 @@ const SupportDashboard = () => {
               <h1 className="text-xl font-semibold text-gray-900">Support Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/create-ticket" className="btn btn-primary">
+                Create Ticket
+              </Link>
               <Link to="/profile" className="btn btn-outline">
                 Profile
               </Link>
@@ -410,14 +438,40 @@ const SupportDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}`}>
-                            {ticket.status.replace('_', ' ')}
-                          </span>
+                          <select
+                            value={ticket.status}
+                            onChange={(e) => {
+                              updateTicketMutation.mutate({
+                                ticketId: ticket._id,
+                                data: { status: e.target.value }
+                              });
+                            }}
+                            disabled={updateTicketMutation.isLoading}
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                          >
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
-                            {ticket.priority}
-                          </span>
+                          <select
+                            value={ticket.priority}
+                            onChange={(e) => {
+                              updateTicketMutation.mutate({
+                                ticketId: ticket._id,
+                                data: { priority: e.target.value }
+                              });
+                            }}
+                            disabled={updateTicketMutation.isLoading}
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                          >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -439,31 +493,31 @@ const SupportDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {ticket.assignedTo ? (
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8">
-                                <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    {ticket.assignedTo?.name?.charAt(0)?.toUpperCase()}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {ticket.assignedTo?.name}
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-500">Unassigned</span>
-                          )}
+                          <select
+                            value={ticket.assignedTo?._id || ''}
+                            onChange={(e) => {
+                              updateTicketMutation.mutate({
+                                ticketId: ticket._id,
+                                data: { assignedTo: e.target.value || null }
+                              });
+                            }}
+                            disabled={updateTicketMutation.isLoading}
+                            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                          >
+                            <option value="">Unassigned</option>
+                            {usersData?.data?.filter(u => u.role === 'end_user').map((userItem) => (
+                              <option key={userItem._id} value={userItem._id}>
+                                {userItem.name}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(ticket.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
-                            onClick={() => navigate(`/ticket/${ticket._id}`)}
+                            onClick={() => navigate(`/tickets/${ticket._id}`)}
                             className="text-primary-600 hover:text-primary-900"
                           >
                             View

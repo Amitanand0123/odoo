@@ -50,12 +50,7 @@ export const ticketService = {
   },
 
   // Upload files
-  uploadFiles: async (files) => {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-    
+  uploadFiles: async (formData) => {
     const response = await api.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

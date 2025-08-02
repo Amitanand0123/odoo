@@ -9,7 +9,8 @@ import {
   Upload, 
   ArrowUp,
   Globe,
-  Mail
+  Mail,
+  LogOut
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -18,7 +19,7 @@ import { categoryService } from '../../services/categoryService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const Profile = () => {
-  const { user, updateProfile, requestUpgrade } = useAuth();
+  const { user, updateProfile, requestUpgrade, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -193,16 +194,20 @@ const Profile = () => {
                     <button
                       onClick={handleUpgradeRequest}
                       disabled={upgradeRequestMutation.isLoading || user?.upgradeRequest}
-                      className="btn btn-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                      className={`btn btn-sm ${
+                        user?.upgradeRequest 
+                          ? 'bg-gray-500 text-white cursor-not-allowed' 
+                          : 'bg-green-600 text-white hover:bg-green-700'
+                      } disabled:opacity-50`}
                     >
                       {upgradeRequestMutation.isLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : user?.upgradeRequest ? (
-                        'Request Pending'
+                        'Requested Upgrade'
                       ) : (
                         <>
                           <ArrowUp className="w-4 h-4 mr-1" />
-                          Upgrade
+                          Request Upgrade
                         </>
                       )}
                     </button>
@@ -403,9 +408,34 @@ const Profile = () => {
                 <span className="ml-2 text-yellow-600 font-medium">
                   Pending review
                 </span>
+                {user?.upgradeRequestDate && (
+                  <div className="mt-1">
+                    <span className="text-gray-500">Requested on:</span>
+                    <span className="ml-2 text-gray-900">
+                      {new Date(user.upgradeRequestDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </div>
+
+        {/* Logout Section */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Account Actions</h3>
+          <div className="flex justify-center">
+            <button
+              onClick={logout}
+              className="btn btn-danger flex items-center space-x-2 px-6 py-3"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-3">
+            Click the button above to securely log out of your account
+          </p>
         </div>
       </div>
     </div>

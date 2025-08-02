@@ -30,6 +30,10 @@
     @apply border border-gray-300 bg-transparent hover:bg-gray-50;
   }
   
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+  }
+  
   .btn-sm {
     @apply h-8 px-3 text-xs;
   }

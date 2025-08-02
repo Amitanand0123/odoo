@@ -4,14 +4,13 @@ const { body } = require('express-validator');
 
 const router = express.Router();
 
-// All routes require authentication and admin role
+// All routes require authentication
 router.use(protect);
-router.use(authorize('admin'));
 
 // @desc    Get all users
 // @route   GET /api/users
-// @access  Private (Admin)
-router.get('/', async (req, res) => {
+// @access  Private (Admin, Support Agent)
+router.get('/', authorize('admin', 'support_agent'), async (req, res) => {
   try {
     const User = require('../models/User');
     const users = await User.find({}).select('-password').sort({ createdAt: -1 });
@@ -25,10 +24,12 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+
 // @desc    Get user by ID
 // @route   GET /api/users/:id
 // @access  Private (Admin)
-router.get('/:id', async (req, res) => {
+router.get('/:id', authorize('admin'), async (req, res) => {
   try {
     const User = require('../models/User');
     const user = await User.findById(req.params.id).select('-password');
@@ -49,7 +50,7 @@ router.get('/:id', async (req, res) => {
 // @desc    Update user role
 // @route   PUT /api/users/:id/role
 // @access  Private (Admin)
-router.put('/:id/role', [
+router.put('/:id/role', authorize('admin'), [
   body('role').isIn(['end_user', 'support_agent', 'admin']).withMessage('Invalid role')
 ], async (req, res) => {
   try {
@@ -81,7 +82,7 @@ router.put('/:id/role', [
 // @desc    Update user status
 // @route   PUT /api/users/:id/status
 // @access  Private (Admin)
-router.put('/:id/status', [
+router.put('/:id/status', authorize('admin'), [
   body('isActive').isBoolean().withMessage('isActive must be a boolean')
 ], async (req, res) => {
   try {
