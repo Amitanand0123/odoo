@@ -357,4 +357,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**QuickDesk** - Making help desk management simple and efficient! 🚀 
+**QuickDesk** - Making help desk management simple and most efficient for the companies to ease their workflow! 🚀 
