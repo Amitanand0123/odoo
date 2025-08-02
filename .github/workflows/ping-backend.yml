@@ -1,0 +1,36 @@
+name: Ping Render Backend
+
+on:
+  schedule:
+    # Run every 14 minutes to keep the backend awake
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Ping Backend
+      run: |
+        # Replace YOUR_RENDER_BACKEND_URL with your actual Render backend URL
+        BACKEND_URL="${{ secrets.RENDER_BACKEND_URL }}"
+        
+        if [ -z "$BACKEND_URL" ]; then
+          echo "Error: RENDER_BACKEND_URL secret is not set"
+          exit 1
+        fi
+        
+        echo "Pinging backend at: $BACKEND_URL"
+        
+        # Ping the health endpoint
+        response=$(curl -s -w "%{http_code}" -o /dev/null "$BACKEND_URL/api/health")
+        
+        if [ "$response" = "200" ]; then
+          echo "✅ Backend is awake and responding (HTTP $response)"
+        else
+          echo "❌ Backend is not responding properly (HTTP $response)"
+          exit 1
+        fi
+        
+        echo "Ping completed at $(date)" 
