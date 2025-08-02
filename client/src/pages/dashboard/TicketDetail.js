@@ -12,7 +12,9 @@ import {
   User,
   Calendar,
   Eye,
-  Settings
+  Settings,
+  Reply,
+  Send
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -26,6 +28,8 @@ const TicketDetail = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
 
   // Validate ticket ID format
   const isValidTicketId = id && id.length === 24;
@@ -125,6 +129,21 @@ const TicketDetail = () => {
     }
   );
 
+  const replyToCommentMutation = useMutation(
+    ({ commentId, content, isInternal }) => ticketService.replyToComment(id, commentId, content, isInternal),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['ticket', id]);
+        setReplyContent('');
+        setReplyingTo(null);
+        toast.success('Reply added successfully');
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'Failed to add reply');
+      }
+    }
+  );
+
   const handleAddComment = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -141,6 +160,25 @@ const TicketDetail = () => {
 
   const handleCommentVote = (commentId, voteType) => {
     voteCommentMutation.mutate({ commentId, voteType });
+  };
+
+  const handleReply = (commentId, authorName) => {
+    setReplyingTo({ commentId, authorName });
+  };
+
+  const handleSubmitReply = () => {
+    if (!replyContent.trim()) return;
+    
+    replyToCommentMutation.mutate({
+      commentId: replyingTo.commentId,
+      content: replyContent,
+      isInternal: user?.role === 'support_agent' || user?.role === 'admin'
+    });
+  };
+
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+    setReplyContent('');
   };
 
   const getStatusColor = (status) => {
@@ -493,38 +531,116 @@ const TicketDetail = () => {
                          {comment.content}
                        </p>
                        
-                       {/* Comment Voting */}
-                       <div className="flex items-center space-x-4 mt-3">
-                         <div className="flex items-center space-x-1">
-                           <button
-                             onClick={() => handleCommentVote(comment._id, 'upvote')}
-                             disabled={voteCommentMutation.isLoading}
-                             className={`p-1 rounded hover:bg-gray-100 ${
-                               comment.upvotes?.some(vote => vote._id === user?.id) ? 'text-green-600' : 'text-gray-400'
-                             }`}
-                           >
-                             <ChevronUp className="w-4 h-4" />
-                           </button>
-                           <span className="text-sm font-medium text-gray-900">
-                             {comment.voteCount || 0}
-                           </span>
-                           <button
-                             onClick={() => handleCommentVote(comment._id, 'downvote')}
-                             disabled={voteCommentMutation.isLoading}
-                             className={`p-1 rounded hover:bg-gray-100 ${
-                               comment.downvotes?.some(vote => vote._id === user?.id) ? 'text-red-600' : 'text-gray-400'
-                             }`}
-                           >
-                             <ChevronDown className="w-4 h-4" />
-                           </button>
-                         </div>
-                         {voteCommentMutation.isLoading && (
-                           <div className="flex items-center text-sm text-gray-500">
-                             <LoadingSpinner size="sm" />
-                             <span className="ml-1">Voting...</span>
-                           </div>
-                         )}
-                       </div>
+                                               {/* Comment Actions */}
+                        <div className="flex items-center space-x-4 mt-3">
+                          <div className="flex items-center space-x-1">
+                            <button
+                              onClick={() => handleCommentVote(comment._id, 'upvote')}
+                              disabled={voteCommentMutation.isLoading}
+                              className={`p-1 rounded hover:bg-gray-100 ${
+                                comment.upvotes?.some(vote => vote._id === user?.id) ? 'text-green-600' : 'text-gray-400'
+                              }`}
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <span className="text-sm font-medium text-gray-900">
+                              {comment.voteCount || 0}
+                            </span>
+                            <button
+                              onClick={() => handleCommentVote(comment._id, 'downvote')}
+                              disabled={voteCommentMutation.isLoading}
+                              className={`p-1 rounded hover:bg-gray-100 ${
+                                comment.downvotes?.some(vote => vote._id === user?.id) ? 'text-red-600' : 'text-gray-400'
+                              }`}
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          {/* Reply Button */}
+                          <button
+                            onClick={() => handleReply(comment._id, comment.author?.name)}
+                            className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            <Reply className="w-4 h-4" />
+                            <span>Reply</span>
+                          </button>
+                          
+                          {voteCommentMutation.isLoading && (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <LoadingSpinner size="sm" />
+                              <span className="ml-1">Voting...</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Reply Form */}
+                        {replyingTo?.commentId === comment._id && (
+                          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Reply className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-600">
+                                Replying to {replyingTo.authorName}
+                              </span>
+                            </div>
+                            <textarea
+                              value={replyContent}
+                              onChange={(e) => setReplyContent(e.target.value)}
+                              placeholder="Write your reply..."
+                              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              rows="3"
+                            />
+                            <div className="flex justify-end space-x-2 mt-2">
+                              <button
+                                onClick={handleCancelReply}
+                                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleSubmitReply}
+                                disabled={!replyContent.trim() || replyToCommentMutation.isLoading}
+                                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                {replyToCommentMutation.isLoading ? (
+                                  <div className="flex items-center">
+                                    <LoadingSpinner size="sm" />
+                                    <span className="ml-1">Sending...</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center">
+                                    <Send className="w-4 h-4 mr-1" />
+                                    Reply
+                                  </div>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Replies */}
+                        {comment.replies && comment.replies.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            {comment.replies.map((reply) => (
+                              <div key={reply._id} className="ml-8 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {reply.author?.name}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(reply.createdAt).toLocaleDateString()}
+                                  </span>
+                                  {reply.isInternal && (
+                                    <span className="badge bg-yellow-100 text-yellow-800 text-xs">
+                                      Internal
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-700">{reply.content}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                      </div>
                    </div>
                  </div>

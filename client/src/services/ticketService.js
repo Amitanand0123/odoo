@@ -61,6 +61,15 @@ export const ticketService = {
     }
   },
 
+  // Reply to comment
+  replyToComment: async (ticketId, commentId, content, isInternal = false) => {
+    const response = await api.post(`/tickets/${ticketId}/comments/${commentId}/reply`, { 
+      content, 
+      isInternal 
+    });
+    return response.data;
+  },
+
   // Assign ticket
   assignTicket: async (ticketId, assignedTo) => {
     const response = await api.put(`/tickets/${ticketId}/assign`, { assignedTo });

@@ -193,17 +193,20 @@ const Profile = () => {
                   {user?.role === 'end_user' && (
                     <button
                       onClick={handleUpgradeRequest}
-                      disabled={upgradeRequestMutation.isLoading || user?.upgradeRequest}
+                      disabled={upgradeRequestMutation.isLoading}
                       className={`btn btn-sm ${
                         user?.upgradeRequest 
-                          ? 'bg-gray-500 text-white cursor-not-allowed' 
+                          ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
                           : 'bg-green-600 text-white hover:bg-green-700'
                       } disabled:opacity-50`}
                     >
                       {upgradeRequestMutation.isLoading ? (
                         <LoadingSpinner size="sm" />
                       ) : user?.upgradeRequest ? (
-                        'Requested Upgrade'
+                        <>
+                          <ArrowUp className="w-4 h-4 mr-1" />
+                          Requested Upgrade
+                        </>
                       ) : (
                         <>
                           <ArrowUp className="w-4 h-4 mr-1" />
@@ -215,17 +218,20 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Edit Button */}
+              {/* Save Button */}
               <button
-                onClick={() => {
-                  if (isEditing) {
-                    reset();
-                  }
-                  setIsEditing(!isEditing);
-                }}
-                className="btn btn-outline"
+                onClick={handleSubmit(handleProfileUpdate)}
+                disabled={updateProfileMutation.isLoading}
+                className="btn btn-primary"
               >
-                {isEditing ? 'Cancel' : 'Edit Profile'}
+                {updateProfileMutation.isLoading ? (
+                  <div className="flex items-center">
+                    <LoadingSpinner size="sm" />
+                    <span className="ml-2">Saving...</span>
+                  </div>
+                ) : (
+                  'Save Changes'
+                )}
               </button>
             </div>
           </div>
@@ -252,8 +258,7 @@ const Profile = () => {
                       message: 'Name must be less than 50 characters'
                     }
                   })}
-                  disabled={!isEditing}
-                  className="input w-full disabled:bg-gray-50 disabled:text-gray-500"
+                  className="input w-full"
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
@@ -311,8 +316,7 @@ const Profile = () => {
                   <select
                     id="category"
                     {...register('category')}
-                    disabled={!isEditing}
-                    className="input w-full disabled:bg-gray-50 disabled:text-gray-500"
+                    className="input w-full"
                   >
                     <option value="">Select a category</option>
                     {categoriesData?.data?.map((category) => (
@@ -335,8 +339,7 @@ const Profile = () => {
                 <select
                   id="language"
                   {...register('language')}
-                  disabled={!isEditing}
-                  className="input w-full disabled:bg-gray-50 disabled:text-gray-500"
+                  className="input w-full"
                 >
                   <option value="en">English</option>
                   <option value="es">Spanish</option>
@@ -347,35 +350,7 @@ const Profile = () => {
                 </select>
               </div>
 
-              {/* Submit Button */}
-              {isEditing && (
-                <div className="flex justify-end space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      reset();
-                      setIsEditing(false);
-                    }}
-                    className="btn btn-outline"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updateProfileMutation.isLoading}
-                    className="btn btn-primary"
-                  >
-                    {updateProfileMutation.isLoading ? (
-                      <div className="flex items-center">
-                        <LoadingSpinner size="sm" />
-                        <span className="ml-2">Saving...</span>
-                      </div>
-                    ) : (
-                      'Save Changes'
-                    )}
-                  </button>
-                </div>
-              )}
+
             </form>
           </div>
         </div>

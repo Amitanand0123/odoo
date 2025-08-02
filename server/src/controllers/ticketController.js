@@ -1,6 +1,7 @@
 const Ticket = require('../models/Ticket');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { sendTicketNotification } = require('../services/emailService');
 const { getCategoryByName } = require('../services/categoryService');
 
@@ -9,7 +10,7 @@ const { getCategoryByName } = require('../services/categoryService');
 // @access  Private
 const getTickets = async (req, res) => {
   try {
-    const { status, category, search, sortBy, sortOrder, page, limit, assignedTo } = req.query;
+    const { status, category, priority, search, sortBy, sortOrder, page, limit, assignedTo } = req.query;
     
     let query = {};
     
@@ -28,6 +29,7 @@ const getTickets = async (req, res) => {
     }
     
     if (status) query.status = status;
+    if (priority) query.priority = priority;
     if (category) {
       // Handle category filtering - if it's a string (category name), find the category
       if (typeof category === 'string' && category.trim()) {
@@ -123,11 +125,21 @@ const getTicket = async (req, res) => {
     ticket.viewCount += 1;
     await ticket.save();
     
-    // Get comments
-    const comments = await Comment.find({ ticket: ticket._id })
+    // Get comments (only top-level comments)
+    const comments = await Comment.find({ 
+      ticket: ticket._id,
+      parentComment: null 
+    })
       .populate('author', 'name email profileImage role')
       .populate('upvotes', 'name')
       .populate('downvotes', 'name')
+      .populate({
+        path: 'replies',
+        populate: {
+          path: 'author',
+          select: 'name email profileImage role'
+        }
+      })
       .sort({ createdAt: 1 });
     
     console.log('Found comments:', comments.length);
@@ -503,6 +515,87 @@ const voteComment = async (req, res) => {
   }
 };
 
+// @desc    Reply to comment
+// @route   POST /api/tickets/:ticketId/comments/:commentId/reply
+// @access  Private
+const replyToComment = async (req, res) => {
+  try {
+    const { content, isInternal = false } = req.body;
+    const { ticketId, commentId } = req.params;
+    
+    // Validate ticket exists
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    
+    // Validate parent comment exists
+    const parentComment = await Comment.findById(commentId);
+    if (!parentComment) {
+      return res.status(404).json({ message: 'Parent comment not found' });
+    }
+    
+    // Create reply comment
+    const reply = new Comment({
+      ticket: ticketId,
+      author: req.user.id,
+      content,
+      isInternal,
+      parentComment: commentId
+    });
+    
+    await reply.save();
+    
+    // Add reply to parent comment
+    parentComment.replies.push(reply._id);
+    await parentComment.save();
+    
+    // Populate the reply with author info
+    const populatedReply = await Comment.findById(reply._id)
+      .populate('author', 'name email profileImage role')
+      .populate('upvotes', 'name')
+      .populate('downvotes', 'name');
+    
+    // Create notification for parent comment author
+    setImmediate(async () => {
+      try {
+        const parentAuthor = await User.findById(parentComment.author);
+        if (parentAuthor && parentAuthor._id.toString() !== req.user.id.toString()) {
+          // Create notification
+          const notification = new Notification({
+            recipient: parentAuthor._id,
+            sender: req.user.id,
+            ticket: ticketId,
+            type: 'comment_reply',
+            title: 'New Reply to Your Comment',
+            message: `${req.user.name} replied to your comment on ticket: ${ticket.subject}`,
+            metadata: {
+              commentId: reply._id,
+              replyContent: content
+            }
+          });
+          await notification.save();
+
+          // Send email notification
+          await sendTicketNotification(ticket, 'comment_reply', parentAuthor, {
+            commentAuthor: req.user.name,
+            commentContent: content
+          });
+        }
+      } catch (error) {
+        console.error('Error creating reply notification:', error);
+      }
+    });
+    
+    res.status(201).json({
+      success: true,
+      data: populatedReply
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getTickets,
   getTicket,
@@ -512,5 +605,6 @@ module.exports = {
   addComment,
   voteTicket,
   assignTicket,
-  voteComment
+  voteComment,
+  replyToComment
 }; 

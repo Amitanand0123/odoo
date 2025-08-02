@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const categoryRoutes = require('./routes/categories');
 const userRoutes = require('./routes/users');
+const notificationRoutes = require('./routes/notifications');
 
 // Connect to database
 connectDB().then(() => {
@@ -50,6 +51,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Upload route
 app.post('/api/upload', require('./middleware/upload').uploadFiles);

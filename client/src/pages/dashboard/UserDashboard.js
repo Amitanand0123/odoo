@@ -14,7 +14,9 @@ import {
   ThumbsUp,
   ThumbsDown,
   SortAsc,
-  SortDesc
+  SortDesc,
+  BarChart3,
+  PieChart
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -221,6 +223,91 @@ const UserDashboard = () => {
                            ticketDate.getFullYear() === now.getFullYear();
                   }).length || 0}
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Status Distribution Chart */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Ticket Status Distribution</h3>
+              <PieChart className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="h-64 flex items-center justify-center">
+              <div className="text-center">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                    <span className="text-sm text-gray-600">Open: {data?.data?.filter(t => t.status === 'open').length || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <span className="text-sm text-gray-600">In Progress: {data?.data?.filter(t => t.status === 'in_progress').length || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-green-500 rounded"></div>
+                    <span className="text-sm text-gray-600">Resolved: {data?.data?.filter(t => t.status === 'resolved').length || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-gray-500 rounded"></div>
+                    <span className="text-sm text-gray-600">Closed: {data?.data?.filter(t => t.status === 'closed').length || 0}</span>
+                  </div>
+                </div>
+                <div className="relative w-32 h-32 mx-auto">
+                  <div className="absolute inset-0 rounded-full border-8 border-blue-500" style={{
+                    clipPath: `polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%)`
+                  }}></div>
+                  <div className="absolute inset-0 rounded-full border-8 border-yellow-500" style={{
+                    clipPath: `polygon(50% 50%, 50% 0%, 75% 0%, 75% 100%, 0% 100%, 0% 0%, 50% 0%)`
+                  }}></div>
+                  <div className="absolute inset-0 rounded-full border-8 border-green-500" style={{
+                    clipPath: `polygon(50% 50%, 50% 0%, 60% 0%, 60% 100%, 0% 100%, 0% 0%, 50% 0%)`
+                  }}></div>
+                  <div className="absolute inset-0 rounded-full border-8 border-gray-500" style={{
+                    clipPath: `polygon(50% 50%, 50% 0%, 55% 0%, 55% 100%, 0% 100%, 0% 0%, 50% 0%)`
+                  }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Priority Distribution Chart */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Priority Distribution</h3>
+              <BarChart3 className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="h-64 flex items-end justify-center space-x-4">
+              <div className="flex flex-col items-center">
+                <div className="w-8 bg-red-500 rounded-t" style={{
+                  height: `${Math.max(20, (data?.data?.filter(t => t.priority === 'urgent').length || 0) * 20)}px`
+                }}></div>
+                <span className="text-xs text-gray-600 mt-1">Urgent</span>
+                <span className="text-xs font-medium">{data?.data?.filter(t => t.priority === 'urgent').length || 0}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 bg-orange-500 rounded-t" style={{
+                  height: `${Math.max(20, (data?.data?.filter(t => t.priority === 'high').length || 0) * 20)}px`
+                }}></div>
+                <span className="text-xs text-gray-600 mt-1">High</span>
+                <span className="text-xs font-medium">{data?.data?.filter(t => t.priority === 'high').length || 0}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 bg-yellow-500 rounded-t" style={{
+                  height: `${Math.max(20, (data?.data?.filter(t => t.priority === 'medium').length || 0) * 20)}px`
+                }}></div>
+                <span className="text-xs text-gray-600 mt-1">Medium</span>
+                <span className="text-xs font-medium">{data?.data?.filter(t => t.priority === 'medium').length || 0}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-8 bg-green-500 rounded-t" style={{
+                  height: `${Math.max(20, (data?.data?.filter(t => t.priority === 'low').length || 0) * 20)}px`
+                }}></div>
+                <span className="text-xs text-gray-600 mt-1">Low</span>
+                <span className="text-xs font-medium">{data?.data?.filter(t => t.priority === 'low').length || 0}</span>
               </div>
             </div>
           </div>

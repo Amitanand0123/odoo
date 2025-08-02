@@ -10,7 +10,8 @@ const {
   addComment,
   voteTicket,
   assignTicket,
-  voteComment
+  voteComment,
+  replyToComment
 } = require('../controllers/ticketController');
 
 const router = express.Router();
@@ -86,6 +87,9 @@ router.route('/:ticketId/comments/:commentId/vote')
 
 router.route('/:id/comments')
   .post(commentValidation, addComment);
+
+router.route('/:ticketId/comments/:commentId/reply')
+  .post(commentValidation, replyToComment);
 
 router.route('/:id/vote')
   .put(voteValidation, voteTicket);
