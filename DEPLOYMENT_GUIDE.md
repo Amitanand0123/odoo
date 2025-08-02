@@ -59,7 +59,10 @@ odoo/
    EMAIL_PASS=your_gmail_app_password
    DISABLE_EMAIL_NOTIFICATIONS=false
    CORS_ORIGIN=https://your-frontend-domain.vercel.app
+   CLIENT_URL=https://your-frontend-domain.vercel.app
    ```
+   
+   **⚠️ IMPORTANT**: Replace `https://your-frontend-domain.vercel.app` with your actual Vercel frontend URL!
 
 5. **Deploy**
    - Click "Create Web Service"

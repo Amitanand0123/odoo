@@ -12,16 +12,18 @@ const defaultCategories = [
 // Initialize default categories
 const initializeCategories = async () => {
   try {
+    console.log('Initializing default categories...');
     for (const categoryData of defaultCategories) {
       const existingCategory = await Category.findOne({ name: categoryData.name });
       if (!existingCategory) {
         await Category.create({
           ...categoryData,
-          createdBy: null // Will be set to admin user when available
+          createdBy: undefined // Will be set to admin user when available
         });
+        console.log(`Created category: ${categoryData.name}`);
       }
     }
-    console.log('Default categories initialized');
+    console.log('Default categories initialization completed');
   } catch (error) {
     console.error('Error initializing categories:', error);
   }
