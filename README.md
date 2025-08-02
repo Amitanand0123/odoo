@@ -33,10 +33,30 @@ A comprehensive help desk solution built with the MERN stack (MongoDB, Express.j
 - Upvote and downvote tickets
 - Vote tracking and display
 
-### 📊 Dashboard
-- Role-specific dashboards
-- Real-time statistics
-- Quick actions and shortcuts
+### 📊 Role-Based Dashboards
+
+#### **End User Dashboard**
+- View personal tickets with filtering, search, and pagination
+- Create new tickets with category selection
+- Track ticket status and progress
+- Vote on tickets and add comments
+
+#### **Support Agent Dashboard**
+- **My Tickets Queue**: View assigned tickets
+- **All Tickets Queue**: Browse all tickets in the system
+- Advanced filtering by status, category, and priority
+- Real-time ticket statistics and metrics
+
+#### **Admin Dashboard**
+- **User Management**: View all users and manage roles
+  - Change user roles (end_user ↔ support_agent ↔ admin)
+  - Activate/deactivate user accounts
+  - View user statistics
+- **Category Management**: Full CRUD operations for ticket categories
+  - Create new categories with custom colors
+  - Edit existing categories
+  - Delete categories (with safety checks)
+- **System Overview**: Comprehensive statistics and metrics
 
 ## Tech Stack
 
@@ -146,11 +166,26 @@ Before running this application, make sure you have the following installed:
    npm start
    ```
 
-3. **Or run both simultaneously**
+3. **Create test users (optional)**
+   ```bash
+   # Create admin user
+   cd server
+   npm run create-admin
+   
+   # Create support agent
+   npm run create-support
+   ```
+
+4. **Or run both simultaneously**
    ```bash
    # From the root directory
    npm run dev
    ```
+
+### Test Accounts
+- **Admin**: admin@quickdesk.com / admin123
+- **Support Agent**: support@quickdesk.com / support123
+- **Regular User**: Register a new account through the UI
 
 ### Production Mode
 

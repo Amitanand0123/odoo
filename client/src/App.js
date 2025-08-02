@@ -8,13 +8,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Dashboard from './pages/dashboard/Dashboard';
 import TicketDetail from './pages/dashboard/TicketDetail';
 import CreateTicket from './pages/dashboard/CreateTicket';
 import Profile from './pages/profile/Profile';
 
 // Components
 import LoadingSpinner from './components/common/LoadingSpinner';
+import RoleBasedDashboard from './components/RoleBasedDashboard';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -82,7 +82,7 @@ const AppRoutes = () => {
         path="/dashboard" 
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <RoleBasedDashboard />
           </ProtectedRoute>
         } 
       />

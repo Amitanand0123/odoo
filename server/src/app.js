@@ -14,6 +14,7 @@ const { initializeCategories } = require('./services/categoryService');
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const categoryRoutes = require('./routes/categories');
+const userRoutes = require('./routes/users');
 
 // Connect to database
 connectDB().then(() => {
@@ -56,6 +57,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

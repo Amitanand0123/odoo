@@ -50,10 +50,22 @@ const createCategory = async (categoryData, createdBy) => {
   });
 };
 
+// Update category
+const updateCategory = async (id, categoryData) => {
+  return await Category.findByIdAndUpdate(id, categoryData, { new: true });
+};
+
+// Delete category
+const deleteCategory = async (id) => {
+  return await Category.findByIdAndDelete(id);
+};
+
 module.exports = {
   initializeCategories,
   getCategoryByName,
   getCategoryById,
   getAllCategories,
-  createCategory
+  createCategory,
+  updateCategory,
+  deleteCategory
 }; 

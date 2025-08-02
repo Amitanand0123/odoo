@@ -21,7 +21,17 @@ const getTickets = async (req, res) => {
     }
     
     if (status) query.status = status;
-    if (category) query.category = category;
+    if (category) {
+      // Handle category filtering - if it's a string (category name), find the category
+      if (typeof category === 'string' && category.trim()) {
+        const categoryDoc = await getCategoryByName(category);
+        if (categoryDoc) {
+          query.category = categoryDoc._id;
+        }
+      } else {
+        query.category = category;
+      }
+    }
     if (search) {
       query.$or = [
         { subject: { $regex: search, $options: 'i' } },
