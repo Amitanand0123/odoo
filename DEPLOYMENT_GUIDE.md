@@ -103,8 +103,10 @@ odoo/
 4. **Environment Variables**
    Add this environment variable:
    ```
-   REACT_APP_API_URL=https://your-backend-url.onrender.com/api
+   REACT_APP_API_URL=https://your-backend-url.onrender.com
    ```
+   
+   **⚠️ IMPORTANT**: Do NOT include `/api` at the end of the URL!
 
 5. **Deploy**
    - Click "Deploy"
@@ -199,7 +201,7 @@ CORS_ORIGIN=https://your-frontend-domain.vercel.app
 
 **Frontend (Vercel) Environment Variables:**
 ```
-REACT_APP_API_URL=https://your-backend-url.onrender.com/api
+REACT_APP_API_URL=https://your-backend-url.onrender.com
 ```
 
 ## Security Notes
