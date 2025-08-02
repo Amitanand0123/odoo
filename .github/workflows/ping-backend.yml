@@ -11,15 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Ping Backend
+    - name: Check Backend URL Secret
       run: |
-        # Replace YOUR_RENDER_BACKEND_URL with your actual Render backend URL
-        BACKEND_URL="${{ secrets.RENDER_BACKEND_URL }}"
-        
-        if [ -z "$BACKEND_URL" ]; then
-          echo "Error: RENDER_BACKEND_URL secret is not set"
+        if [ -z "${{ secrets.RENDER_BACKEND_URL }}" ]; then
+          echo "❌ RENDER_BACKEND_URL secret is not set"
+          echo "Please add this secret in your GitHub repository:"
+          echo "1. Go to Settings → Secrets and variables → Actions"
+          echo "2. Click 'New repository secret'"
+          echo "3. Name: RENDER_BACKEND_URL"
+          echo "4. Value: https://your-backend-url.onrender.com"
+          echo "5. Click 'Add secret'"
           exit 1
         fi
+        
+        echo "✅ RENDER_BACKEND_URL secret is configured"
+    
+    - name: Ping Backend
+      run: |
+        BACKEND_URL="${{ secrets.RENDER_BACKEND_URL }}"
         
         echo "Pinging backend at: $BACKEND_URL"
         
@@ -30,7 +39,9 @@ jobs:
           echo "✅ Backend is awake and responding (HTTP $response)"
         else
           echo "❌ Backend is not responding properly (HTTP $response)"
-          exit 1
+          echo "This might be normal if the backend is sleeping on Render's free tier"
+          echo "The workflow will continue to ping every 14 minutes to keep it awake"
+          exit 0  # Don't fail the workflow, just log the issue
         fi
         
         echo "Ping completed at $(date)" 
