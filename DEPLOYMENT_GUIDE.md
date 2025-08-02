@@ -42,7 +42,7 @@ odoo/
    - **Root Directory**: `server` (important!)
    - **Runtime**: `Node`
    - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
+   - **Start Command**: `npm start` (this will run `node index.js`)
    - **Plan**: Free (or paid if needed)
 
 4. **Environment Variables**
@@ -161,6 +161,11 @@ CORS_ORIGIN=https://your-frontend-domain.vercel.app
    - Check Render logs for errors
    - Verify environment variables are set correctly
    - Ensure MongoDB connection string is valid
+
+2. **Module Not Found Error**
+   - Ensure `server/index.js` exists and points to `src/app.js`
+   - Verify `package.json` has `"main": "index.js"` and `"start": "node index.js"`
+   - Check that the Root Directory is set to `server` in Render
 
 2. **Frontend Can't Connect to Backend**
    - Verify `REACT_APP_API_URL` is set correctly

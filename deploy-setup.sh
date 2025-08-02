@@ -20,6 +20,7 @@ echo "📋 Checking required files..."
 required_files=(
     "server/package.json"
     "client/package.json"
+    "server/index.js"
     "server/src/app.js"
     "client/src/services/api.js"
     ".github/workflows/ping-backend.yml"

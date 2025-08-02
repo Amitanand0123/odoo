@@ -2,7 +2,7 @@
   "name": "quickdesk",
   "version": "1.0.0",
   "description": "A comprehensive help desk solution built with MERN stack",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",

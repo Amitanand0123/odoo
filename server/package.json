@@ -2,9 +2,9 @@
   "name": "quickdesk-server",
   "version": "1.0.0",
   "description": "QuickDesk Backend API",
-  "main": "src/app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node index.js",
     "dev": "nodemon src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-admin": "node scripts/createAdmin.js",
