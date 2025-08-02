@@ -178,7 +178,7 @@ const AdminDashboard = () => {
       case 'low': return 'bg-green-100 text-green-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
+      case 'urgent': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -557,10 +557,10 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="ml-4">
                                   <div className="text-sm font-medium text-gray-900">
-                                    {ticket.title}
+                                    {ticket.subject}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    {ticket.category}
+                                    {ticket.category?.name || 'Unknown'}
                                   </div>
                                 </div>
                               </div>
@@ -657,7 +657,7 @@ const TicketHistoryModal = ({ ticket, onClose }) => {
       case 'low': return 'bg-green-100 text-green-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
+      case 'urgent': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -742,7 +742,7 @@ const TicketHistoryModal = ({ ticket, onClose }) => {
         <div className="mt-3">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-semibold text-gray-900">
-              Ticket History: {ticket.title}
+              Ticket History: {ticket.subject}
             </h3>
             <button
               onClick={onClose}
@@ -769,7 +769,7 @@ const TicketHistoryModal = ({ ticket, onClose }) => {
               </div>
               <div>
                 <span className="text-sm font-medium text-gray-500">Category:</span>
-                <span className="ml-2 text-sm text-gray-900">{ticket.category}</span>
+                <span className="ml-2 text-sm text-gray-900">{ticket.category?.name || 'Unknown'}</span>
               </div>
             </div>
           </div>
