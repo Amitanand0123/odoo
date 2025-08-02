@@ -99,11 +99,16 @@ const getTicket = async (req, res) => {
     }
     
     const ticket = await Ticket.findById(req.params.id)
-      .populate('createdBy', 'name email profileImage')
-      .populate('assignedTo', 'name email profileImage')
+      .populate('createdBy', 'name email profileImage role')
+      .populate('assignedTo', 'name email profileImage role')
       .populate('category', 'name color')
       .populate('upvotes', 'name')
-      .populate('downvotes', 'name');
+      .populate('downvotes', 'name')
+      .populate('statusHistory.changedBy', 'name email role')
+      .populate('priorityHistory.changedBy', 'name email role')
+      .populate('assignmentHistory.assignedBy', 'name email role')
+      .populate('assignmentHistory.oldAssignedTo', 'name email role')
+      .populate('assignmentHistory.newAssignedTo', 'name email role');
     
     console.log('Found ticket:', ticket ? 'Yes' : 'No');
     
@@ -243,6 +248,41 @@ const updateTicket = async (req, res) => {
     // Support agents and admins can update any ticket
     
     const oldStatus = ticket.status;
+    const oldPriority = ticket.priority;
+    const oldAssignedTo = ticket.assignedTo;
+    
+    // Track status changes
+    if (status !== undefined && status !== oldStatus) {
+      ticket.statusHistory.push({
+        oldStatus: oldStatus,
+        newStatus: status,
+        changedBy: req.user.id,
+        changedAt: new Date(),
+        reason: req.body.statusReason || 'Status updated'
+      });
+    }
+    
+    // Track priority changes
+    if (priority !== undefined && priority !== oldPriority) {
+      ticket.priorityHistory.push({
+        oldPriority: oldPriority,
+        newPriority: priority,
+        changedBy: req.user.id,
+        changedAt: new Date(),
+        reason: req.body.priorityReason || 'Priority updated'
+      });
+    }
+    
+    // Track assignment changes
+    if (assignedTo !== undefined && assignedTo?.toString() !== oldAssignedTo?.toString()) {
+      ticket.assignmentHistory.push({
+        oldAssignedTo: oldAssignedTo,
+        newAssignedTo: assignedTo,
+        assignedBy: req.user.id,
+        assignedAt: new Date(),
+        reason: req.body.assignmentReason || 'Ticket reassigned'
+      });
+    }
     
     if (subject !== undefined) ticket.subject = subject;
     if (description !== undefined) ticket.description = description;
