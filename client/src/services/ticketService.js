@@ -50,8 +50,15 @@ export const ticketService = {
 
   // Vote on comment
   voteComment: async (ticketId, commentId, voteType) => {
-    const response = await api.put(`/tickets/${ticketId}/comments/${commentId}/vote`, { voteType });
-    return response.data;
+    console.log('Voting on comment:', { ticketId, commentId, voteType });
+    try {
+      const response = await api.put(`/tickets/${ticketId}/comments/${commentId}/vote`, { voteType });
+      console.log('Vote response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Vote comment error:', error);
+      throw error;
+    }
   },
 
   // Assign ticket

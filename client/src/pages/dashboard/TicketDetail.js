@@ -113,12 +113,14 @@ const TicketDetail = () => {
   const voteCommentMutation = useMutation(
     ({ commentId, voteType }) => ticketService.voteComment(id, commentId, voteType),
     {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        console.log('Comment vote success:', data);
         queryClient.invalidateQueries(['ticket', id]);
         toast.success('Comment vote recorded successfully');
       },
       onError: (error) => {
-        toast.error('Failed to record comment vote');
+        console.error('Comment vote error:', error);
+        toast.error(error.response?.data?.message || 'Failed to record comment vote');
       }
     }
   );
@@ -498,7 +500,7 @@ const TicketDetail = () => {
                              onClick={() => handleCommentVote(comment._id, 'upvote')}
                              disabled={voteCommentMutation.isLoading}
                              className={`p-1 rounded hover:bg-gray-100 ${
-                               comment.upvotes?.some(vote => vote._id === user?._id) ? 'text-green-600' : 'text-gray-400'
+                               comment.upvotes?.some(vote => vote._id === user?.id) ? 'text-green-600' : 'text-gray-400'
                              }`}
                            >
                              <ChevronUp className="w-4 h-4" />
@@ -510,7 +512,7 @@ const TicketDetail = () => {
                              onClick={() => handleCommentVote(comment._id, 'downvote')}
                              disabled={voteCommentMutation.isLoading}
                              className={`p-1 rounded hover:bg-gray-100 ${
-                               comment.downvotes?.some(vote => vote._id === user?._id) ? 'text-red-600' : 'text-gray-400'
+                               comment.downvotes?.some(vote => vote._id === user?.id) ? 'text-red-600' : 'text-gray-400'
                              }`}
                            >
                              <ChevronDown className="w-4 h-4" />

@@ -3,7 +3,6 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const { sendTicketNotification } = require('../services/emailService');
 const { getCategoryByName } = require('../services/categoryService');
-const Comment = require('../models/Comment');
 
 // @desc    Get all tickets
 // @route   GET /api/tickets
@@ -447,12 +446,24 @@ const assignTicket = async (req, res) => {
 // @access  Private
 const voteComment = async (req, res) => {
   try {
+    console.log('Vote comment request:', {
+      ticketId: req.params.ticketId,
+      commentId: req.params.commentId,
+      voteType: req.body.voteType,
+      userId: req.user.id
+    });
+
     const { voteType } = req.body; // 'upvote' or 'downvote'
     const { commentId } = req.params;
+    
+    if (!voteType || !['upvote', 'downvote'].includes(voteType)) {
+      return res.status(400).json({ message: 'Invalid vote type' });
+    }
     
     const comment = await Comment.findById(commentId);
     
     if (!comment) {
+      console.log('Comment not found:', commentId);
       return res.status(404).json({ message: 'Comment not found' });
     }
     
@@ -476,11 +487,18 @@ const voteComment = async (req, res) => {
       .populate('upvotes', 'name')
       .populate('downvotes', 'name');
     
+    console.log('Comment vote successful:', {
+      commentId,
+      voteType,
+      voteCount: updatedComment.voteCount
+    });
+    
     res.json({
       success: true,
       data: updatedComment
     });
   } catch (error) {
+    console.error('Error in voteComment:', error);
     res.status(400).json({ message: error.message });
   }
 };

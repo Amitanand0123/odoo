@@ -80,10 +80,9 @@ router.route('/')
   .get(getTickets)
   .post(ticketValidation, createTicket);
 
-router.route('/:id')
-  .get(getTicket)
-  .put(updateTicketValidation, updateTicket)
-  .delete(deleteTicket);
+// Comment voting route must come before the :id route to avoid conflicts
+router.route('/:ticketId/comments/:commentId/vote')
+  .put(voteValidation, voteComment);
 
 router.route('/:id/comments')
   .post(commentValidation, addComment);
@@ -94,7 +93,9 @@ router.route('/:id/vote')
 router.route('/:id/assign')
   .put(authorize('support_agent', 'admin'), assignTicket);
 
-router.route('/:ticketId/comments/:commentId/vote')
-  .put(voteValidation, voteComment);
+router.route('/:id')
+  .get(getTicket)
+  .put(updateTicketValidation, updateTicket)
+  .delete(deleteTicket);
 
 module.exports = router; 
