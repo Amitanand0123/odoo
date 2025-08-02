@@ -2,7 +2,7 @@
 
 A comprehensive help desk solution built with the MERN stack (MongoDB, Express.js, React.js, Node.js) that provides efficient ticket management, user support, and administrative capabilities.
 
-## 🌟 Features
+## 🌟 Features of our Application
 
 ### 🔐 Authentication & User Management
 - **Role-based Access Control**: Support for `end_user`, `support_agent`, and `admin` roles
